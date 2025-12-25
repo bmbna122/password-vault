@@ -48,5 +48,9 @@ jobs:
         COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
       run: |
         echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-        cosign sign --key cosign.key ${{ secrets.DOCKERHUB_USER }}/password-vault:${{ github.sha }}
-        cosign sign --key cosign.key ${{ secrets.DOCKERHUB_USER }}/password-vault:latest
+
+        DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ secrets.DOCKERHUB_USER }}/password-vault:${{ github.sha }})
+
+        COSIGN_EXPERIMENTAL=1 cosign sign --yes --key cosign.key $DIGEST
+        COSIGN_EXPERIMENTAL=1 cosign sign --yes --key cosign.key ${{ secrets.DOCKERHUB_USER }}/password-vault:latest
+
