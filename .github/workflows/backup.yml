@@ -14,11 +14,17 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y postgresql-client openssl
 
     - name: Dump & Encrypt DB
+      env:
+        SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        BACKUP_PASSWORD: ${{ secrets.BACKUP_PASSWORD }}
       run: |
         DATE=$(date +%F)
-        pg_dump "${{ secrets.SUPABASE_DB_URL }}" | gzip > vault-$DATE.sql.gz
-        openssl enc -aes-256-cbc -salt -in vault-$DATE.sql.gz -out vault-$DATE.sql.gz.enc -k "${{ secrets.BACKUP_PASSWORD }}"
+        echo "Starting backup..."
+        pg_dump "$SUPABASE_DB_URL" > vault-$DATE.sql
+        gzip vault-$DATE.sql
+        openssl enc -aes-256-cbc -salt -in vault-$DATE.sql.gz -out vault-$DATE.sql.gz.enc -k "$BACKUP_PASSWORD"
         rm vault-$DATE.sql.gz
+
 
     - name: Upload Backup
       uses: actions/upload-artifact@v4
