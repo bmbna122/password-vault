@@ -1,8 +1,6 @@
 name: Nightly Supabase Backup
 
 on:
-  schedule:
-    - cron: "0 2 * * *"   # every night at 2 AM UTC
   workflow_dispatch:
 
 jobs:
@@ -13,22 +11,33 @@ jobs:
     - name: Install tools
       run: sudo apt-get update && sudo apt-get install -y postgresql-client openssl
 
-    - name: Dump & Encrypt DB
+    - name: Verify secrets present
+      run: |
+        test -n "${{ secrets.SUPABASE_DB_URL }}" || (echo "SUPABASE_DB_URL missing" && exit 1)
+        test -n "${{ secrets.BACKUP_PASSWORD }}" || (echo "BACKUP_PASSWORD missing" && exit 1)
+        echo "Secrets OK"
+
+    - name: Dump DB
       env:
         SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      run: |
+        echo "Connecting to database..."
+        pg_dump "$SUPABASE_DB_URL" > backup.sql
+
+    - name: Encrypt
+      env:
         BACKUP_PASSWORD: ${{ secrets.BACKUP_PASSWORD }}
       run: |
-        DATE=$(date +%F)
-        echo "Starting backup..."
-        pg_dump "$SUPABASE_DB_URL" > vault-$DATE.sql
-        gzip vault-$DATE.sql
-        openssl enc -aes-256-cbc -salt -in vault-$DATE.sql.gz -out vault-$DATE.sql.gz.enc -k "$BACKUP_PASSWORD"
-        rm vault-$DATE.sql.gz
+        gzip backup.sql
+        openssl enc -aes-256-cbc -salt -in backup.sql.gz -out backup.sql.gz.enc -k "$BACKUP_PASSWORD"
+        rm backup.sql.gz
 
+    - name: List files
+      run: ls -l
 
     - name: Upload Backup
       uses: actions/upload-artifact@v4
       with:
-        name: supabase-backup-${{ github.run_id }}
-        path: vault-*.enc
-        retention-days: 30
+        name: supabase-backup-debug
+        path: backup.sql.gz.enc
+        retention-days: 7
