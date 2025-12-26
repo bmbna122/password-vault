@@ -17,12 +17,17 @@ jobs:
         test -n "${{ secrets.BACKUP_PASSWORD }}" || (echo "BACKUP_PASSWORD missing" && exit 1)
         echo "Secrets OK"
 
-    - name: Dump DB
+    - name: Dump DB (diagnostic)
       env:
         SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       run: |
-        echo "Connecting to database..."
+        echo "DB URL is:"
+        echo "$SUPABASE_DB_URL" | sed 's/:[^@]*@/:****@/'
         pg_dump "$SUPABASE_DB_URL" > backup.sql
+        echo "Dump size:"
+        ls -lh backup.sql
+        head -n 5 backup.sql
+
 
     - name: Encrypt
       env:
