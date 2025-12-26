@@ -1,5 +1,8 @@
 fastapi
 uvicorn
-python-multipart
 requests
-
+passlib[argon2]
+python-jose
+python-multipart
+prometheus-fastapi-instrumentator
+slowapi

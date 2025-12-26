@@ -1,0 +1,21 @@
+myval89.duckdns.org:8443 {
+
+    # Use your own private CA cert
+    tls /etc/caddy/certs/vault.crt /etc/caddy/certs/vault.key
+
+    encode gzip
+
+    reverse_proxy password-vault:8000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto https
+    }
+
+    # Allow ACME validation paths if ever needed
+    handle_path /.well-known/acme-challenge/* {
+        root * /var/www/html
+        file_server
+    }
+}
+
