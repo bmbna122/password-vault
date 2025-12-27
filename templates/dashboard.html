@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Password Vault</title>
+  <style>
+    body { font-family: monospace; background:#0b0f14; color:#00ffb3; padding:40px }
+    input, button { background:#111; color:#00ffb3; border:1px solid #00ffb3; padding:8px; margin:4px }
+    table { border-collapse: collapse; width:100%; margin-top:20px }
+    th, td { border:1px solid #00ffb3; padding:8px }
+  </style>
+</head>
+<body>
+
+<h1>🔐 Password Vault</h1>
+
+<h3>Register</h3>
+<form action="/register" method="post">
+  <input name="email" placeholder="email">
+  <input name="password" placeholder="password">
+  <button>Register</button>
+</form>
+
+<h3>Login</h3>
+<form id="loginForm">
+  <input name="username" placeholder="email">
+  <input name="password" placeholder="password">
+  <button>Login</button>
+</form>
+
+<h3>Generate Secret</h3>
+<form id="genForm">
+  <input name="username" placeholder="username">
+  <input name="notes" placeholder="notes">
+  <button>Generate</button>
+</form>
+
+<pre id="output"></pre>
+
+<script>
+let token = null;
+
+document.getElementById("loginForm").onsubmit = async e => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const r = await fetch("/login",{method:"POST",body:f});
+  const j = await r.json();
+  token = j.access_token;
+  document.getElementById("output").textContent = "Logged in";
+}
+
+document.getElementById("genForm").onsubmit = async e => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const r = await fetch("/generate",{method:"POST",headers:{Authorization:"Bearer "+token},body:f});
+  const j = await r.json();
+  document.getElementById("output").textContent = "New password: "+j.password;
+}
+</script>
+
+</body>
+</html>
+

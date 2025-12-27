@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Form, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import jwt
@@ -43,6 +44,12 @@ def create_token(user_id: str):
 
 def verify_password(plain, hashed):
     return pwd_context.verify(plain, hashed)
+
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse("dashboard.html", {"request": request})
 
 @app.post("/register")
 @limiter.limit("10/minute")

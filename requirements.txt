@@ -6,3 +6,4 @@ python-jose
 python-multipart
 prometheus-fastapi-instrumentator
 slowapi
+jinja2

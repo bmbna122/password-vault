@@ -7,6 +7,8 @@ COPY requirements.txt .
 RUN  pip install --no-cache-dir -r requirements.txt
 
 COPY app.py supabase_store.py ./
+COPY templates ./templates
+COPY static ./static
 
 USER appuser
 

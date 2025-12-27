@@ -1,0 +1,28 @@
+version: "3.8"
+
+networks:
+  vault-net:
+
+services:
+  vault:
+    image: password-vault
+    container_name: password-vault
+    restart: unless-stopped
+    networks: [vault-net]
+    environment:
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_KEY: ${SUPABASE_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+    expose:
+      - "8000"
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    networks: [vault-net]
+    ports:
+      - "8443:443"
+    volumes:
+      - /opt/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - /opt/caddy/certs:/opt/caddy/certs:ro
